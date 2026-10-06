@@ -1,0 +1,160 @@
+{
+  "type": "component",
+  "metadata": {
+    "svelteMajor": 5
+  },
+  "schema": {
+    "name": "budibase-classic-table",
+    "friendlyName": "ClassicTable",
+    "description": "The classic budibase table with a search field on top, by Christian",
+    "icon": "Table",
+    "hasChildren": true,
+    "showEmptyState": false,
+    "illegalChildren": ["section"],
+    "actions": ["ClearRowSelection"],
+    "size": {
+      "width": 600,
+      "height": 400
+    },
+    "context": [
+      {
+        "type": "schema",
+        "scope": "local"
+      },
+      {
+        "type": "static",
+        "values": [
+          {
+            "label": "Selected Rows",
+            "key": "selectedRows",
+            "type": "array"
+          }
+        ]
+      }
+    ],
+    "settings": [
+      {
+        "type": "dataProvider",
+        "label": "Data provider",
+        "key": "dataProvider",
+        "required": true
+      },
+      {
+        "type": "columns",
+        "label": "Columns",
+        "key": "columns",
+        "dependsOn": "dataProvider",
+        "nested": true
+      },
+      {
+        "type": "select",
+        "label": "Size",
+        "key": "size",
+        "defaultValue": "spectrum--medium",
+        "options": [
+          {
+            "label": "Medium",
+            "value": "spectrum--medium"
+          },
+          {
+            "label": "Large",
+            "value": "spectrum--large"
+          }
+        ]
+      },
+      {
+        "type": "number",
+        "label": "Row count",
+        "key": "rowCount",
+        "defaultValue": 8
+      },
+      {
+        "type": "boolean",
+        "label": "Quiet",
+        "key": "quiet"
+      },
+      {
+        "type": "boolean",
+        "label": "Compact",
+        "key": "compact"
+      },
+      {
+        "type": "boolean",
+        "label": "Row selection",
+        "key": "allowSelectRows",
+        "defaultValue": false,
+        "info": "Row selection is only compatible with internal or SQL tables"
+      },
+      {
+        "type": "text",
+        "label": "Selection text",
+        "key": "selectedText",
+        "defaultValue": "ausgewählt"
+      },
+      {
+        "type": "text",
+        "label": "Empty text",
+        "key": "noRowsMessage",
+        "defaultValue": "Keine Zeilen gefunden"
+      },
+      {
+        "section": true,
+        "name": "Search",
+        "settings": [
+          {
+            "type": "boolean",
+            "label": "Show search",
+            "key": "showSearch",
+            "defaultValue": true
+          },
+          {
+            "type": "multifield",
+            "label": "Search fields",
+            "key": "searchColumns",
+            "dependsOn": "dataProvider",
+            "placeholder": "All text columns",
+            "info": "Without a selection all text columns are searched"
+          },
+          {
+            "type": "text",
+            "label": "Placeholder",
+            "key": "searchPlaceholder",
+            "defaultValue": "Suchen"
+          },
+          {
+            "type": "select",
+            "label": "Position",
+            "key": "searchAlign",
+            "defaultValue": "left",
+            "options": [
+              {
+                "label": "Left",
+                "value": "left"
+              },
+              {
+                "label": "Right",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "section": true,
+        "name": "On Row Click",
+        "settings": [
+          {
+            "type": "event",
+            "key": "onClick",
+            "context": [
+              {
+                "label": "Clicked row",
+                "key": "row"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
