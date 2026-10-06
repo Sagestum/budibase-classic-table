@@ -7,6 +7,11 @@ plugin format, with a search field on top.
 ## Requirements
 A Budibase version that runs Svelte 5 plugins (`schema.metadata.svelteMajor: 5`).
 
+## Installation
+1. Open Budibase and navigate to the "Plugins" section.
+2. Click add plugin and select the GitHub source.
+3. Enter the URL `https://github.com/Sagestum/budibase-classic-table`.
+
 ## Use
 1. Add a **Data Provider** and choose its data source, sorting, limit and pagination.
 2. Add the **ClassicTable** component inside the data provider.
