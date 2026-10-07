@@ -98,6 +98,19 @@
         "defaultValue": "Keine Zeilen gefunden"
       },
       {
+        "type": "boolean",
+        "label": "Resizable columns",
+        "key": "allowResize",
+        "defaultValue": true,
+        "info": "Drag the right edge of a column header to resize, double click it to reset"
+      },
+      {
+        "type": "boolean",
+        "label": "Show full text on hover",
+        "key": "showTooltip",
+        "defaultValue": true
+      },
+      {
         "section": true,
         "name": "Search",
         "settings": [

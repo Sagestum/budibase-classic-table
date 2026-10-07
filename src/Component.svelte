@@ -1,5 +1,5 @@
 <script>
-  import { getContext, onDestroy } from "svelte"
+  import { getContext, onDestroy, tick } from "svelte"
   import Cell from "./Cell.svelte"
   import RowContext from "./RowContext.svelte"
 
@@ -17,6 +17,8 @@
   export let searchColumns
   export let searchPlaceholder
   export let searchAlign
+  export let allowResize = true
+  export let showTooltip = true
 
   const component = getContext("component")
   const context = getContext("context")
@@ -25,6 +27,10 @@
 
   const HEADER_HEIGHT = 36
   const SEARCH_DEBOUNCE = 300
+  const TOOLTIP_DELAY = 600
+  const TOOLTIP_GAP = 6
+  const MIN_COLUMN_WIDTH = 40
+  const WIDTHS_KEY = `classic-table-widths-${$component.id}`
   const CUSTOM_COLUMN = `custom-${Math.random()}`
   const TEXT_TYPES = ["string", "longform", "options", "formula", "barcodeqr"]
   const NUMBER_TYPES = ["number", "bigint"]
@@ -45,6 +51,19 @@
   let searchTerm = ""
   let searchTimeout
   let extensionProviderId
+  let columnWidths = {}
+  let resizing
+  let tooltip
+  let tooltipElement
+  let tooltipTarget
+  let tooltipTimeout
+
+  // Column widths set by dragging are remembered per browser
+  try {
+    columnWidths = JSON.parse(localStorage.getItem(WIDTHS_KEY)) || {}
+  } catch (error) {
+    columnWidths = {}
+  }
 
   $: snippets = $context.snippets
   $: hasChildren = $component.children
@@ -59,7 +78,9 @@
     allowSelectRows &&
     ["table", "viewV2"].includes(dataProvider?.datasource?.type)
   $: rowHeight = compact ? 46 : 55
-  $: gridStyle = getGridStyle(fields, schema, canSelectRows)
+  $: resizedWidths = allowResize !== false ? columnWidths : {}
+  $: hasResized = fields.some(field => resizedWidths[field])
+  $: gridStyle = getGridStyle(fields, schema, canSelectRows, resizedWidths)
   $: heightStyle = getHeightStyle(rows.length, rowCount, rowHeight)
   $: cellStyles = computeCellStyles(schema)
   $: allSelected =
@@ -183,14 +204,18 @@
       ? fieldSchema.name
       : fieldSchema.displayName) || ""
 
-  const getGridStyle = (fields, schema, canSelectRows) => {
+  const getGridStyle = (fields, schema, canSelectRows, resizedWidths) => {
     let style = "grid-template-columns:"
     if (canSelectRows) {
       style += " auto"
     }
     fields.forEach(field => {
       const width = schema[field].width
-      style += width && typeof width === "string" ? ` ${width}` : " minmax(auto, 1fr)"
+      if (resizedWidths[field]) {
+        style += ` ${resizedWidths[field]}px`
+      } else {
+        style += width && typeof width === "string" ? ` ${width}` : " minmax(auto, 1fr)"
+      }
     })
     return `${style};`
   }
@@ -384,12 +409,108 @@
     applySearch($context, dataProvider?.id, showSearch, searchFields)
   }
 
+  const saveColumnWidths = () => {
+    try {
+      localStorage.setItem(WIDTHS_KEY, JSON.stringify(columnWidths))
+    } catch (error) {
+      // Without storage the widths just last until the page is left
+    }
+  }
+
+  const startResize = (e, field) => {
+    if (e.button !== 0) {
+      return
+    }
+    hideTooltip()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    resizing = {
+      field,
+      startX: e.clientX,
+      startWidth: e.currentTarget.parentElement.getBoundingClientRect().width,
+    }
+  }
+
+  const resize = e => {
+    if (!resizing) {
+      return
+    }
+    const width = Math.round(resizing.startWidth + e.clientX - resizing.startX)
+    columnWidths = {
+      ...columnWidths,
+      [resizing.field]: Math.max(MIN_COLUMN_WIDTH, width),
+    }
+  }
+
+  const stopResize = () => {
+    if (!resizing) {
+      return
+    }
+    resizing = null
+    saveColumnWidths()
+  }
+
+  // A double click on the handle gives the column its original width back
+  const resetWidth = field => {
+    columnWidths = { ...columnWidths }
+    delete columnWidths[field]
+    saveColumnWidths()
+  }
+
+  const hideTooltip = () => {
+    clearTimeout(tooltipTimeout)
+    tooltipTarget = null
+    tooltip = null
+  }
+
+  // Shows the full content of a cell after hovering a truncated text for a while
+  const onMouseOver = e => {
+    const target =
+      showTooltip !== false && !resizing
+        ? e.target.closest?.("[data-overflow-tip]")
+        : null
+    if (target === tooltipTarget) {
+      return
+    }
+    hideTooltip()
+    tooltipTarget = target
+    if (target) {
+      tooltipTimeout = setTimeout(() => openTooltip(target), TOOLTIP_DELAY)
+    }
+  }
+
+  const openTooltip = async target => {
+    if (!target.isConnected || target.scrollWidth <= target.clientWidth) {
+      return
+    }
+    tooltip = { text: target.textContent.trim(), style: "visibility: hidden;" }
+    await tick()
+    if (!tooltipElement || tooltipTarget !== target) {
+      return
+    }
+    const cell = target.getBoundingClientRect()
+    const tip = tooltipElement.getBoundingClientRect()
+    let left = Math.min(cell.left, window.innerWidth - tip.width - TOOLTIP_GAP)
+    let top = cell.bottom + TOOLTIP_GAP
+    const above = cell.top - TOOLTIP_GAP - tip.height
+    if (top + tip.height > window.innerHeight - TOOLTIP_GAP && above >= 0) {
+      top = above
+    }
+    // A transformed ancestor moves the origin of fixed elements, the measured
+    // position of the still unplaced tooltip tells by how much
+    left = Math.max(TOOLTIP_GAP, left) - tip.left
+    top -= tip.top
+    tooltip = { ...tooltip, style: `left: ${left}px; top: ${top}px;` }
+  }
+
   onDestroy(() => {
     clearTimeout(searchTimeout)
+    clearTimeout(tooltipTimeout)
     removeSearch()
     rowSelectionStore.actions.updateSelection($component.id, "", [])
   })
 </script>
+
+<svelte:window on:scroll|capture={hideTooltip} />
 
 <div use:styleable={$component.styles} class="classic-table {size || ''}">
   <Provider {actions} data={dataContext}>
@@ -426,6 +547,7 @@
     {/if}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <div
       class="wrapper"
       class:wrapper--quiet={quiet}
@@ -435,7 +557,11 @@
       <div
         class="spectrum-Table"
         class:no-scroll={!rowCount}
+        class:has-resized={hasResized}
         style="{heightStyle}{gridStyle}"
+        on:mouseover={onMouseOver}
+        on:mouseleave={hideTooltip}
+        on:mousedown={hideTooltip}
       >
         {#if fields.length}
           <div class="spectrum-Table-head">
@@ -462,7 +588,7 @@
                 on:click={() => sortBy(schema[field])}
               >
                 <div class="title" title={schema[field].custom ? "" : field}>
-                  {getDisplayName(schema[field])}
+                  <span class="title-text">{getDisplayName(schema[field])}</span>
                   {#if sortColumn === field}
                     <svg
                       class="sort-icon"
@@ -474,6 +600,18 @@
                     </svg>
                   {/if}
                 </div>
+                {#if allowResize !== false && !schema[field].custom}
+                  <div
+                    class="resize-handle"
+                    class:is-active={resizing?.field === field}
+                    on:pointerdown|stopPropagation={e => startResize(e, field)}
+                    on:pointermove={resize}
+                    on:pointerup={stopResize}
+                    on:pointercancel={stopResize}
+                    on:click|stopPropagation
+                    on:dblclick|stopPropagation={() => resetWidth(field)}
+                  ></div>
+                {/if}
               </div>
             {/each}
           </div>
@@ -506,11 +644,13 @@
                 {:else}
                   <div
                     class="spectrum-Table-cell"
+                    class:is-resized={resizedWidths[field]}
                     style={cellStyles[field]}
                     on:click={() => clickRow(row)}
                   >
                     <Cell
                       schema={schema[field]}
+                      fullWidth={!!resizedWidths[field]}
                       value={deepGet(row, field)}
                       {snippets}
                     />
@@ -535,6 +675,11 @@
       </div>
     </div>
   </Provider>
+  {#if tooltip}
+    <div class="tooltip" style={tooltip.style} bind:this={tooltipElement}>
+      {tooltip.text}
+    </div>
+  {/if}
   {#if canSelectRows && selectedRows.length}
     <div class="row-count">
       {selectedRows.length}
@@ -644,6 +789,10 @@
   .spectrum-Table.no-scroll {
     overflow: visible;
   }
+  /* Resized columns can be wider than the table, so it has to scroll */
+  .spectrum-Table.no-scroll.has-resized {
+    overflow: auto;
+  }
 
   /* Header */
   .spectrum-Table-head {
@@ -714,11 +863,41 @@
     justify-content: center;
   }
   .spectrum-Table-headCell .title {
-    overflow: visible;
-    text-overflow: ellipsis;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 4px;
+  }
+  .title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 9px;
+    cursor: col-resize;
+    touch-action: none;
+  }
+  .resize-handle::after {
+    content: "";
+    position: absolute;
+    top: 25%;
+    bottom: 25%;
+    right: 0;
+    width: 2px;
+    border-radius: 1px;
+    background-color: transparent;
+    transition: background-color 130ms ease-out;
+  }
+  .spectrum-Table-head:hover .resize-handle::after {
+    background-color: var(--spectrum-global-color-gray-300);
+  }
+  .resize-handle:hover::after,
+  .resize-handle.is-active::after {
+    background-color: var(--spectrum-global-color-blue-500);
   }
   .sort-icon {
     width: 14px;
@@ -786,6 +965,9 @@
       var(--spectrum-alias-text-color)
     );
   }
+  .spectrum-Table-cell.is-resized {
+    overflow: hidden;
+  }
   .spectrum-Table-cell--divider {
     border-right: 1px solid var(--spectrum-alias-border-color-mid);
   }
@@ -801,6 +983,29 @@
     height: 14px;
     cursor: pointer;
     accent-color: var(--spectrum-global-color-blue-500);
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 999;
+    box-sizing: border-box;
+    max-width: min(420px, calc(100vw - 12px));
+    max-height: 60vh;
+    overflow: hidden;
+    padding: 6px 10px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+    font-size: var(--spectrum-alias-font-size-default, 14px);
+    line-height: 1.4;
+    color: var(--spectrum-alias-text-color);
+    background-color: var(--spectrum-global-color-gray-50);
+    border: 1px solid var(--spectrum-alias-border-color-mid);
+    border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   /* Placeholder */

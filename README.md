@@ -24,6 +24,9 @@ A Budibase version that runs Svelte 5 plugins (`schema.metadata.svelteMajor: 5`)
   not just the loaded page. Text columns are searched with "contains", number columns need an
   exact match. Without selected search fields all text columns are searched.
 - Columns setting with display name, width, alignment and value template.
+- Drag the right edge of a column header to change the column width, like in a spreadsheet.
+  A double click on the edge restores the original width. The widths are remembered per browser.
+- Hovering a truncated text for a moment shows the full content in a tooltip.
 - Row count (scroll limit), compact and quiet mode, medium and large size.
 - Row selection with the `Selected Rows` binding and the `Clear Row Selection` action.
 - `On Row Click` actions with the clicked row as context.

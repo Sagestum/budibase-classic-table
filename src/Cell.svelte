@@ -4,6 +4,7 @@
   export let value
   export let schema
   export let snippets
+  export let fullWidth = false
 
   const { processStringSync } = getContext("sdk")
 
@@ -81,7 +82,7 @@
   {#if kind === "boolean"}
     <input type="checkbox" class="boolean" disabled checked={!!cellValue} />
   {:else if kind === "datetime"}
-    <div class="date">{formatDate(cellValue, schema)}</div>
+    <div class="date" data-overflow-tip>{formatDate(cellValue, schema)}</div>
   {:else if kind === "relationship"}
     {#each visible as relationship}
       {#if relationship?.primaryDisplay}
@@ -114,7 +115,8 @@
     <div
       class="text"
       class:capitalise={schema?.capitalise}
-      style="--max-cell-width: {schema?.width ? 'none' : '200px'};"
+      style="--max-cell-width: {schema?.width || fullWidth ? 'none' : '200px'};"
+      data-overflow-tip
     >
       {typeof cellValue === "object" ? JSON.stringify(cellValue) : cellValue}
     </div>
