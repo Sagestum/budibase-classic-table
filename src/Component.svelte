@@ -31,7 +31,9 @@
   const TOOLTIP_GAP = 6
   const MIN_COLUMN_WIDTH = 40
   const WIDTHS_KEY = `classic-table-widths-${$component.id}`
+  const RULE_COUNT = 5
   const CUSTOM_COLUMN = `custom-${Math.random()}`
+  const SELECT_COLUMN = `select-${Math.random()}`
   const TEXT_TYPES = ["string", "longform", "options", "formula", "barcodeqr"]
   const NUMBER_TYPES = ["number", "bigint"]
   const UNSORTABLE_TYPES = [
@@ -83,6 +85,8 @@
   $: gridStyle = getGridStyle(fields, schema, canSelectRows, resizedWidths)
   $: heightStyle = getHeightStyle(rows.length, rowCount, rowHeight)
   $: cellStyles = computeCellStyles(schema)
+  $: rules = getRules($$props)
+  $: ruleStyles = computeRuleStyles(rules, rows, fields)
   $: allSelected =
     rows.length > 0 && rows.every(row => isSelected(selectedRows, row))
   $: searchFields = getSearchFields(fullSchema, searchColumns)
@@ -263,6 +267,108 @@
       return row?.[path]
     }
     return path.split(".").reduce((value, key) => value?.[key], row)
+  }
+
+  // The color rules are numbered settings (rule1Field, rule1Operator, ...)
+  const getRules = props => {
+    let rules = []
+    for (let i = 1; i <= RULE_COUNT; i++) {
+      const rule = {
+        field: props[`rule${i}Field`],
+        operator: props[`rule${i}Operator`],
+        value: props[`rule${i}Value`],
+        background: props[`rule${i}Background`],
+        color: props[`rule${i}Color`],
+        scope: props[`rule${i}Scope`],
+      }
+      if (rule.field && (rule.background || rule.color)) {
+        rules.push(rule)
+      }
+    }
+    return rules
+  }
+
+  const toText = value => {
+    if (value == null) {
+      return ""
+    }
+    if (Array.isArray(value)) {
+      return value.map(toText).join(", ")
+    }
+    if (typeof value === "object") {
+      return `${value.primaryDisplay ?? value.name ?? JSON.stringify(value)}`
+    }
+    return `${value}`
+  }
+
+  const toNumber = text => (text === "" ? NaN : Number(text.replace(",", ".")))
+
+  // Numbers are compared as numbers, everything else as text ignoring case
+  const compare = (a, b) => {
+    const numberA = toNumber(a)
+    const numberB = toNumber(b)
+    if (!isNaN(numberA) && !isNaN(numberB)) {
+      return numberA - numberB
+    }
+    return a === b ? 0 : a < b ? -1 : 1
+  }
+
+  const matchesRule = (rule, value) => {
+    const text = toText(value).trim().toLowerCase()
+    const expected = toText(rule.value).trim().toLowerCase()
+    switch (rule.operator) {
+      case "notEqual":
+        return compare(text, expected) !== 0
+      case "contains":
+        return text.includes(expected)
+      case "notContains":
+        return !text.includes(expected)
+      case "greater":
+        return text !== "" && compare(text, expected) > 0
+      case "less":
+        return text !== "" && compare(text, expected) < 0
+      case "empty":
+        return text === ""
+      case "notEmpty":
+        return text !== ""
+      default:
+        return compare(text, expected) === 0
+    }
+  }
+
+  // Returns the rule colors of every row as styles by column. Earlier rules
+  // win over later ones, separately for background and text color.
+  const computeRuleStyles = (rules, rows, fields) => {
+    if (!rules.length) {
+      return []
+    }
+    const colors = rows.map(() => ({}))
+    rules.forEach(rule => {
+      const matches = rows.map(row => matchesRule(rule, deepGet(row, rule.field)))
+      const anyMatch = matches.includes(true)
+      const columns =
+        rule.scope === "row" ? [SELECT_COLUMN, ...fields] : [rule.field]
+      rows.forEach((row, idx) => {
+        // A column is colored as a whole as soon as one of its cells matches
+        if (rule.scope === "column" ? !anyMatch : !matches[idx]) {
+          return
+        }
+        columns.forEach(column => {
+          const cell = (colors[idx][column] ??= {})
+          cell.background ||= rule.background
+          cell.color ||= rule.color
+        })
+      })
+    })
+    return colors.map(row => {
+      let styles = {}
+      Object.entries(row).forEach(([column, cell]) => {
+        styles[column] =
+          (cell.background ? `background-color: ${cell.background};` : "") +
+          (cell.color ? `color: ${cell.color};` : "")
+      })
+      return styles
+    })
   }
 
   // Sorting is delegated to the data provider so it covers all pages
@@ -617,11 +723,12 @@
           </div>
         {/if}
         {#if rows.length}
-          {#each rows as row}
+          {#each rows as row, idx}
             <div class="spectrum-Table-row clickable">
               {#if canSelectRows}
                 <div
                   class="spectrum-Table-cell spectrum-Table-cell--divider spectrum-Table-cell--edit"
+                  style={ruleStyles[idx]?.[SELECT_COLUMN]}
                   on:click|stopPropagation={() => toggleSelectRow(row)}
                 >
                   <input
@@ -635,7 +742,7 @@
                 {#if schema[field].custom}
                   <div
                     class="spectrum-Table-cell spectrum-Table-cell--divider"
-                    style={cellStyles[field]}
+                    style="{cellStyles[field]}{ruleStyles[idx]?.[field] || ''}"
                   >
                     <RowContext {row}>
                       <slot />
@@ -645,7 +752,7 @@
                   <div
                     class="spectrum-Table-cell"
                     class:is-resized={resizedWidths[field]}
-                    style={cellStyles[field]}
+                    style="{cellStyles[field]}{ruleStyles[idx]?.[field] || ''}"
                     on:click={() => clickRow(row)}
                   >
                     <Cell

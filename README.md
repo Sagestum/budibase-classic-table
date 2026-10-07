@@ -27,6 +27,10 @@ A Budibase version that runs Svelte 5 plugins (`schema.metadata.svelteMajor: 5`)
 - Drag the right edge of a column header to change the column width, like in a spreadsheet.
   A double click on the edge restores the original width. The widths are remembered per browser.
 - Hovering a truncated text for a moment shows the full content in a tooltip.
+- Up to five color rules that set the background and text color depending on the value of a
+  column (equals, contains, greater than, is empty, ...). A rule colors the matching cell, the
+  whole row of the matching cell, or the whole column as soon as one of its loaded cells matches.
+  With several matching rules the first one wins.
 - Row count (scroll limit), compact and quiet mode, medium and large size.
 - Row selection with the `Selected Rows` binding and the `Clear Row Selection` action.
 - `On Row Click` actions with the clicked row as context.

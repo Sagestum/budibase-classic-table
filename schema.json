@@ -10,8 +10,12 @@
     "icon": "Table",
     "hasChildren": true,
     "showEmptyState": false,
-    "illegalChildren": ["section"],
-    "actions": ["ClearRowSelection"],
+    "illegalChildren": [
+      "section"
+    ],
+    "actions": [
+      "ClearRowSelection"
+    ],
     "size": {
       "width": 600,
       "height": 400
@@ -147,6 +151,467 @@
               {
                 "label": "Right",
                 "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "section": true,
+        "name": "Color rule 1",
+        "settings": [
+          {
+            "type": "field",
+            "label": "Column",
+            "key": "rule1Field",
+            "dependsOn": "dataProvider",
+            "info": "Colors cells depending on the value of this column. With several matching rules the first one wins."
+          },
+          {
+            "type": "select",
+            "label": "Condition",
+            "key": "rule1Operator",
+            "defaultValue": "equal",
+            "dependsOn": "rule1Field",
+            "options": [
+              {
+                "label": "Equals",
+                "value": "equal"
+              },
+              {
+                "label": "Not equals",
+                "value": "notEqual"
+              },
+              {
+                "label": "Contains",
+                "value": "contains"
+              },
+              {
+                "label": "Does not contain",
+                "value": "notContains"
+              },
+              {
+                "label": "Greater than",
+                "value": "greater"
+              },
+              {
+                "label": "Less than",
+                "value": "less"
+              },
+              {
+                "label": "Is empty",
+                "value": "empty"
+              },
+              {
+                "label": "Is not empty",
+                "value": "notEmpty"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "label": "Value",
+            "key": "rule1Value",
+            "dependsOn": "rule1Field"
+          },
+          {
+            "type": "color",
+            "label": "Background",
+            "key": "rule1Background",
+            "dependsOn": "rule1Field"
+          },
+          {
+            "type": "color",
+            "label": "Text color",
+            "key": "rule1Color",
+            "dependsOn": "rule1Field"
+          },
+          {
+            "type": "select",
+            "label": "Applies to",
+            "key": "rule1Scope",
+            "defaultValue": "cell",
+            "dependsOn": "rule1Field",
+            "options": [
+              {
+                "label": "Cell",
+                "value": "cell"
+              },
+              {
+                "label": "Whole row",
+                "value": "row"
+              },
+              {
+                "label": "Whole column",
+                "value": "column"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "section": true,
+        "name": "Color rule 2",
+        "settings": [
+          {
+            "type": "field",
+            "label": "Column",
+            "key": "rule2Field",
+            "dependsOn": "dataProvider"
+          },
+          {
+            "type": "select",
+            "label": "Condition",
+            "key": "rule2Operator",
+            "defaultValue": "equal",
+            "dependsOn": "rule2Field",
+            "options": [
+              {
+                "label": "Equals",
+                "value": "equal"
+              },
+              {
+                "label": "Not equals",
+                "value": "notEqual"
+              },
+              {
+                "label": "Contains",
+                "value": "contains"
+              },
+              {
+                "label": "Does not contain",
+                "value": "notContains"
+              },
+              {
+                "label": "Greater than",
+                "value": "greater"
+              },
+              {
+                "label": "Less than",
+                "value": "less"
+              },
+              {
+                "label": "Is empty",
+                "value": "empty"
+              },
+              {
+                "label": "Is not empty",
+                "value": "notEmpty"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "label": "Value",
+            "key": "rule2Value",
+            "dependsOn": "rule2Field"
+          },
+          {
+            "type": "color",
+            "label": "Background",
+            "key": "rule2Background",
+            "dependsOn": "rule2Field"
+          },
+          {
+            "type": "color",
+            "label": "Text color",
+            "key": "rule2Color",
+            "dependsOn": "rule2Field"
+          },
+          {
+            "type": "select",
+            "label": "Applies to",
+            "key": "rule2Scope",
+            "defaultValue": "cell",
+            "dependsOn": "rule2Field",
+            "options": [
+              {
+                "label": "Cell",
+                "value": "cell"
+              },
+              {
+                "label": "Whole row",
+                "value": "row"
+              },
+              {
+                "label": "Whole column",
+                "value": "column"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "section": true,
+        "name": "Color rule 3",
+        "settings": [
+          {
+            "type": "field",
+            "label": "Column",
+            "key": "rule3Field",
+            "dependsOn": "dataProvider"
+          },
+          {
+            "type": "select",
+            "label": "Condition",
+            "key": "rule3Operator",
+            "defaultValue": "equal",
+            "dependsOn": "rule3Field",
+            "options": [
+              {
+                "label": "Equals",
+                "value": "equal"
+              },
+              {
+                "label": "Not equals",
+                "value": "notEqual"
+              },
+              {
+                "label": "Contains",
+                "value": "contains"
+              },
+              {
+                "label": "Does not contain",
+                "value": "notContains"
+              },
+              {
+                "label": "Greater than",
+                "value": "greater"
+              },
+              {
+                "label": "Less than",
+                "value": "less"
+              },
+              {
+                "label": "Is empty",
+                "value": "empty"
+              },
+              {
+                "label": "Is not empty",
+                "value": "notEmpty"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "label": "Value",
+            "key": "rule3Value",
+            "dependsOn": "rule3Field"
+          },
+          {
+            "type": "color",
+            "label": "Background",
+            "key": "rule3Background",
+            "dependsOn": "rule3Field"
+          },
+          {
+            "type": "color",
+            "label": "Text color",
+            "key": "rule3Color",
+            "dependsOn": "rule3Field"
+          },
+          {
+            "type": "select",
+            "label": "Applies to",
+            "key": "rule3Scope",
+            "defaultValue": "cell",
+            "dependsOn": "rule3Field",
+            "options": [
+              {
+                "label": "Cell",
+                "value": "cell"
+              },
+              {
+                "label": "Whole row",
+                "value": "row"
+              },
+              {
+                "label": "Whole column",
+                "value": "column"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "section": true,
+        "name": "Color rule 4",
+        "settings": [
+          {
+            "type": "field",
+            "label": "Column",
+            "key": "rule4Field",
+            "dependsOn": "dataProvider"
+          },
+          {
+            "type": "select",
+            "label": "Condition",
+            "key": "rule4Operator",
+            "defaultValue": "equal",
+            "dependsOn": "rule4Field",
+            "options": [
+              {
+                "label": "Equals",
+                "value": "equal"
+              },
+              {
+                "label": "Not equals",
+                "value": "notEqual"
+              },
+              {
+                "label": "Contains",
+                "value": "contains"
+              },
+              {
+                "label": "Does not contain",
+                "value": "notContains"
+              },
+              {
+                "label": "Greater than",
+                "value": "greater"
+              },
+              {
+                "label": "Less than",
+                "value": "less"
+              },
+              {
+                "label": "Is empty",
+                "value": "empty"
+              },
+              {
+                "label": "Is not empty",
+                "value": "notEmpty"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "label": "Value",
+            "key": "rule4Value",
+            "dependsOn": "rule4Field"
+          },
+          {
+            "type": "color",
+            "label": "Background",
+            "key": "rule4Background",
+            "dependsOn": "rule4Field"
+          },
+          {
+            "type": "color",
+            "label": "Text color",
+            "key": "rule4Color",
+            "dependsOn": "rule4Field"
+          },
+          {
+            "type": "select",
+            "label": "Applies to",
+            "key": "rule4Scope",
+            "defaultValue": "cell",
+            "dependsOn": "rule4Field",
+            "options": [
+              {
+                "label": "Cell",
+                "value": "cell"
+              },
+              {
+                "label": "Whole row",
+                "value": "row"
+              },
+              {
+                "label": "Whole column",
+                "value": "column"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "section": true,
+        "name": "Color rule 5",
+        "settings": [
+          {
+            "type": "field",
+            "label": "Column",
+            "key": "rule5Field",
+            "dependsOn": "dataProvider"
+          },
+          {
+            "type": "select",
+            "label": "Condition",
+            "key": "rule5Operator",
+            "defaultValue": "equal",
+            "dependsOn": "rule5Field",
+            "options": [
+              {
+                "label": "Equals",
+                "value": "equal"
+              },
+              {
+                "label": "Not equals",
+                "value": "notEqual"
+              },
+              {
+                "label": "Contains",
+                "value": "contains"
+              },
+              {
+                "label": "Does not contain",
+                "value": "notContains"
+              },
+              {
+                "label": "Greater than",
+                "value": "greater"
+              },
+              {
+                "label": "Less than",
+                "value": "less"
+              },
+              {
+                "label": "Is empty",
+                "value": "empty"
+              },
+              {
+                "label": "Is not empty",
+                "value": "notEmpty"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "label": "Value",
+            "key": "rule5Value",
+            "dependsOn": "rule5Field"
+          },
+          {
+            "type": "color",
+            "label": "Background",
+            "key": "rule5Background",
+            "dependsOn": "rule5Field"
+          },
+          {
+            "type": "color",
+            "label": "Text color",
+            "key": "rule5Color",
+            "dependsOn": "rule5Field"
+          },
+          {
+            "type": "select",
+            "label": "Applies to",
+            "key": "rule5Scope",
+            "defaultValue": "cell",
+            "dependsOn": "rule5Field",
+            "options": [
+              {
+                "label": "Cell",
+                "value": "cell"
+              },
+              {
+                "label": "Whole row",
+                "value": "row"
+              },
+              {
+                "label": "Whole column",
+                "value": "column"
               }
             ]
           }
