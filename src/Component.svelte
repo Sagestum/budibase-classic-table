@@ -6,6 +6,7 @@
   export let dataProvider
   export let columns
   export let rowCount
+  export let fillSpace = false
   export let quiet
   export let size
   export let allowSelectRows
@@ -83,7 +84,9 @@
   $: resizedWidths = allowResize !== false ? columnWidths : {}
   $: hasResized = fields.some(field => resizedWidths[field])
   $: gridStyle = getGridStyle(fields, schema, canSelectRows, resizedWidths)
-  $: heightStyle = getHeightStyle(rows.length, rowCount, rowHeight)
+  $: heightStyle = fillSpace
+    ? ""
+    : getHeightStyle(rows.length, rowCount, rowHeight)
   $: cellStyles = computeCellStyles(schema)
   $: rules = getRules($$props)
   $: ruleStyles = computeRuleStyles(rules, rows, fields)
@@ -618,7 +621,9 @@
 
 <svelte:window on:scroll|capture={hideTooltip} />
 
-<div use:styleable={$component.styles} class="classic-table {size || ''}">
+<div use:styleable={$component.styles} class="classic-table {size || ''}"
+  class:fill={fillSpace}
+>
   <Provider {actions} data={dataContext}>
     {#if showSearch}
       <div class="search-bar" class:search-bar--right={searchAlign === "right"}>
@@ -662,7 +667,7 @@
     >
       <div
         class="spectrum-Table"
-        class:no-scroll={!rowCount}
+        class:no-scroll={!rowCount && !fillSpace}
         class:has-resized={hasResized}
         style="{heightStyle}{gridStyle}"
         on:mouseover={onMouseOver}
@@ -801,6 +806,28 @@
   }
   .row-count {
     margin-top: var(--spacing-l);
+  }
+
+  /* Fill the available space of the parent, the table scrolls inside */
+  .classic-table.fill {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+  .fill .search-bar,
+  .fill .row-count {
+    flex: none;
+  }
+  .fill .spectrum-Table {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
   }
 
   /* Search */

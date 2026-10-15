@@ -74,6 +74,13 @@
       },
       {
         "type": "boolean",
+        "label": "Fill available space",
+        "key": "fillSpace",
+        "defaultValue": false,
+        "info": "The table takes the full width and height of its parent and scrolls inside. Row count is then ignored. The data provider needs a height too, e.g. flex: 1 or height: 100% as custom CSS."
+      },
+      {
+        "type": "boolean",
         "label": "Quiet",
         "key": "quiet"
       },

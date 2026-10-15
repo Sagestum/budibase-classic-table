@@ -32,6 +32,9 @@ A Budibase version that runs Svelte 5 plugins (`schema.metadata.svelteMajor: 5`)
   whole row of the matching cell, or the whole column as soon as one of its loaded cells matches.
   With several matching rules the first one wins.
 - Row count (scroll limit), compact and quiet mode, medium and large size.
+- "Fill available space" lets the table take the full width and height of its parent (for
+  example a flex container) and scroll inside. The data provider around it needs a height too,
+  e.g. `flex: 1` or `height: 100%` as custom CSS.
 - Row selection with the `Selected Rows` binding and the `Clear Row Selection` action.
 - `On Row Click` actions with the clicked row as context.
 - Components placed inside the table are rendered as a first column for every row and can
