@@ -20,6 +20,8 @@
   export let searchAlign
   export let allowResize = true
   export let showTooltip = true
+  export let componentsAfter
+  export let componentsTitle
 
   const component = getContext("component")
   const context = getContext("context")
@@ -74,7 +76,13 @@
   $: fullSchema = dataProvider?.schema ?? {}
   $: primaryDisplay = dataProvider?.primaryDisplay
   $: fieldList = getFields(fullSchema, columns, primaryDisplay)
-  $: schema = getFilteredSchema(fullSchema, fieldList, hasChildren)
+  $: schema = getFilteredSchema(
+    fullSchema,
+    fieldList,
+    hasChildren,
+    componentsAfter,
+    componentsTitle
+  )
   $: fields = Object.keys(schema)
   $: rows = fields.length ? data : []
   $: canSelectRows =
@@ -170,17 +178,32 @@
     return fieldSchema?.type !== "formula" || fieldSchema.formulaType === "static"
   }
 
-  const getFilteredSchema = (schema, fields, hasChildren) => {
+  const getFilteredSchema = (
+    schema,
+    fields,
+    hasChildren,
+    componentsAfter,
+    componentsTitle
+  ) => {
     let newSchema = {}
-    if (hasChildren) {
-      newSchema[CUSTOM_COLUMN] = {
-        name: CUSTOM_COLUMN,
-        displayName: null,
-        sortable: false,
-        divider: true,
-        width: "auto",
-        custom: true,
-      }
+    const customColumn = {
+      name: CUSTOM_COLUMN,
+      displayName: componentsTitle || null,
+      sortable: false,
+      divider: true,
+      width: "auto",
+      custom: true,
+    }
+    // Without a valid column the components come first
+    const columnNames = fields.map(field =>
+      typeof field === "string" ? field : field.name
+    )
+    const after =
+      componentsAfter && columnNames.includes(componentsAfter)
+        ? componentsAfter
+        : null
+    if (hasChildren && !after) {
+      newSchema[CUSTOM_COLUMN] = customColumn
     }
     fields.forEach(field => {
       const columnName = typeof field === "string" ? field : field.name
@@ -201,6 +224,9 @@
       const width = newSchema[columnName].width
       if (width != null && `${width}`.trim().match(/^[0-9]+$/)) {
         delete newSchema[columnName].width
+      }
+      if (hasChildren && columnName === after) {
+        newSchema[CUSTOM_COLUMN] = { ...customColumn, dividerLeft: true }
       }
     })
     return newSchema
@@ -747,6 +773,8 @@
                 {#if schema[field].custom}
                   <div
                     class="spectrum-Table-cell spectrum-Table-cell--divider"
+                    class:spectrum-Table-cell--dividerLeft={schema[field]
+                      .dividerLeft}
                     style="{cellStyles[field]}{ruleStyles[idx]?.[field] || ''}"
                   >
                     <RowContext {row}>
@@ -1104,6 +1132,9 @@
   }
   .spectrum-Table-cell--divider {
     border-right: 1px solid var(--spectrum-alias-border-color-mid);
+  }
+  .spectrum-Table-cell--dividerLeft {
+    border-left: 1px solid var(--spectrum-alias-border-color-mid);
   }
   .spectrum-Table-cell--edit {
     position: sticky;

@@ -37,8 +37,9 @@ A Budibase version that runs Svelte 5 plugins (`schema.metadata.svelteMajor: 5`)
   e.g. `flex: 1` or `height: 100%` as custom CSS.
 - Row selection with the `Selected Rows` binding and the `Clear Row Selection` action.
 - `On Row Click` actions with the clicked row as context.
-- Components placed inside the table are rendered as a first column for every row and can
-  bind to the row.
+- Components placed inside the table are rendered as an extra column for every row and can
+  bind to the row. By default it is the first column; "Show after column" moves it behind any
+  other column, and it can get a title.
 
 ## Build
 ```

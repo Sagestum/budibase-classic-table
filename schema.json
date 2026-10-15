@@ -123,6 +123,24 @@
       },
       {
         "section": true,
+        "name": "Components column",
+        "settings": [
+          {
+            "type": "field",
+            "label": "Show after column",
+            "key": "componentsAfter",
+            "dependsOn": "dataProvider",
+            "info": "Components placed inside the table, like buttons, are shown in an extra column. Without a choice it is the first column."
+          },
+          {
+            "type": "text",
+            "label": "Title",
+            "key": "componentsTitle"
+          }
+        ]
+      },
+      {
+        "section": true,
         "name": "Search",
         "settings": [
           {
